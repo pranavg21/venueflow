@@ -8,16 +8,7 @@ RUN npm ci --ignore-scripts
 
 COPY client/ ./
 
-# Build args for Vite env vars (injected at build time)
-ARG VITE_FIREBASE_API_KEY
-ARG VITE_FIREBASE_AUTH_DOMAIN
-ARG VITE_FIREBASE_DATABASE_URL
-ARG VITE_FIREBASE_PROJECT_ID
-ARG VITE_FIREBASE_STORAGE_BUCKET
-ARG VITE_FIREBASE_MESSAGING_SENDER_ID
-ARG VITE_FIREBASE_APP_ID
-ARG VITE_GOOGLE_MAPS_API_KEY
-
+# Vite automatically reads .env.production during `npm run build`
 RUN npm run build
 
 # ── Stage 2: Build server ──────────────────────────────────────────────

@@ -2,14 +2,14 @@
 
 The problem: 33,000 people, zero visibility into congestion, fragmented staff coordination, and blind navigation inside the venue.
 
-The solution: A production web app that gives attendees live zone status, wait times, congestion-aware routing (Dijkstra's algorithm), and an AI assistant powered by Gemini 2.0 Flash — all grounded in live data, not static FAQs.
+The solution: A production web app that gives attendees live zone status, wait times, congestion-aware routing (Dijkstra's algorithm), and an AI assistant powered by Gemini 2.5 Flash — all grounded in live data, not static FAQs.
 
 Staff get a real-time dashboard to update zone occupancy, manage operational alerts, and receive AI-generated crowd management recommendations.
 
 Built with:
 ⚡ Firebase Realtime Database for push-based sync
 🗺️ Google Maps JS API for venue visualization
-🤖 Gemini 2.0 Flash for grounded AI chat & recommendations
+🤖 Gemini 2.5 Flash for grounded AI chat & recommendations
 🔐 Firebase Auth with role-based access
 ☁️ Deployed on Google Cloud Run
 

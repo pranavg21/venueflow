@@ -13,7 +13,10 @@ function htmlEnvPlugin(): Plugin {
   return {
     name: 'html-env-vars',
     configResolved(config) {
-      env = loadEnv(config.mode, path.resolve(process.cwd(), '../'), 'VITE_');
+      // In Docker, .env.production is in the current dir; locally, .env is in parent
+      const localEnv = loadEnv(config.mode, process.cwd(), 'VITE_');
+      const parentEnv = loadEnv(config.mode, path.resolve(process.cwd(), '../'), 'VITE_');
+      env = { ...parentEnv, ...localEnv };
     },
     transformIndexHtml(html) {
       return html.replace(/__VITE_(\w+)__/g, (_match, key) => {
@@ -24,7 +27,7 @@ function htmlEnvPlugin(): Plugin {
 }
 
 export default defineConfig({
-  envDir: '../',
+  envDir: path.resolve(__dirname),
   plugins: [
     react(),
     htmlEnvPlugin(),
