@@ -63,7 +63,7 @@ const zones: Record<string, ZoneData> = {
     type: 'entry',
     capacity: 8000,
     currentOccupancy: 3200, // 40% — clear
-    coordinates: { lat: 18.93965, lng: 72.82535 }, // North tip of stadium, main gate
+    coordinates: { lat: 18.9394712, lng: 72.8262613 }, // User-provided North Stand
     adjacentZones: ['zone-east-food', 'zone-west-food', 'zone-garware'],
   },
   'zone-south-entry': {
@@ -71,7 +71,7 @@ const zones: Record<string, ZoneData> = {
     type: 'entry',
     capacity: 7000,
     currentOccupancy: 5250, // 75% — crowded
-    coordinates: { lat: 18.93775, lng: 72.82530 }, // South tip of stadium
+    coordinates: { lat: 18.9380028, lng: 72.825764 }, // Derived: Just south of Stadium Center
     adjacentZones: ['zone-east-food', 'zone-west-food', 'zone-sachin'],
   },
   'zone-east-food': {
@@ -79,7 +79,7 @@ const zones: Record<string, ZoneData> = {
     type: 'concession',
     capacity: 3000,
     currentOccupancy: 1800, // 60% — moderate
-    coordinates: { lat: 18.93870, lng: 72.82650 }, // East perimeter of oval
+    coordinates: { lat: 18.9388528, lng: 72.826764 }, // East perimeter parallel to center
     adjacentZones: ['zone-north-entry', 'zone-south-entry', 'zone-garware', 'zone-sachin'],
   },
   'zone-west-food': {
@@ -87,7 +87,7 @@ const zones: Record<string, ZoneData> = {
     type: 'concession',
     capacity: 2500,
     currentOccupancy: 2125, // 85% — critical
-    coordinates: { lat: 18.93870, lng: 72.82420 }, // West perimeter of oval
+    coordinates: { lat: 18.9388528, lng: 72.824764 }, // West perimeter parallel to center
     adjacentZones: ['zone-north-entry', 'zone-south-entry', 'zone-garware', 'zone-sachin'],
   },
   'zone-garware': {
@@ -95,7 +95,7 @@ const zones: Record<string, ZoneData> = {
     type: 'restroom',
     capacity: 1500,
     currentOccupancy: 750, // 50% — moderate
-    coordinates: { lat: 18.93930, lng: 72.82450 }, // Northwest area of stadium
+    coordinates: { lat: 18.9376962, lng: 72.825283 }, // User-provided Garware Club House
     adjacentZones: ['zone-north-entry', 'zone-east-food', 'zone-west-food', 'zone-sachin'],
   },
   'zone-sachin': {
@@ -103,7 +103,7 @@ const zones: Record<string, ZoneData> = {
     type: 'restroom',
     capacity: 1200,
     currentOccupancy: 1080, // 90% — critical
-    coordinates: { lat: 18.93810, lng: 72.82620 }, // Southeast area of stadium
+    coordinates: { lat: 18.9395695, lng: 72.8253287 }, // User-provided Sachin Tendulkar Stand
     adjacentZones: ['zone-south-entry', 'zone-east-food', 'zone-west-food', 'zone-garware'],
   },
 };

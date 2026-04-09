@@ -80,7 +80,7 @@ ATTENDEE QUESTION: ${userMessage}
 Respond helpfully based on the live data above. If this is a follow-up question, use the conversation context:`;
 
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
     const result = await model.generateContent(prompt);
     const text = result.response.text();
     return text ?? 'I apologize, I could not generate a response. Please try again.';
@@ -114,7 +114,7 @@ ${alertContext}
 Generate 3-5 specific, actionable crowd management recommendations based on this data:`;
 
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
     const result = await model.generateContent(prompt);
     const text = result.response.text();
     // Split numbered list into individual recommendations
@@ -158,7 +158,7 @@ ${zoneContext}
 Assess this alert in the context of current crowd conditions and suggest 2-3 specific immediate response actions:`;
 
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
     const result = await model.generateContent(prompt);
     const text = result.response.text();
     return text ?? 'Unable to triage this alert automatically.';
