@@ -24,6 +24,7 @@ Large venues suffer from congestion, long wait times, and safety risks during pe
 ## Assumptions & Refinements Needed
 To build this prototype within the hackathon time constraints, several assumptions were made:
 - **Data Collection:** We assume the venue has physical IoT sensors (turnstiles, cameras) capable of reporting live occupancy to the API. Currently, this is simulated using a backend "tick" engine for demonstration purposes.
+- **Venue Customization:** While specifically mapped to Wankhede Stadium for this prototype, the core VenueFlow architecture is fully agnostic. It can be instantly customized for any other stadium, airport, or mall simply by adjusting the 6 JSON zones and their respective capacities/coordinates in the database seeder.
 - **Stand Mapping:** The polygonal physical boundaries of the stands are currently represented by precise point coordinates on the map. In a fully refined production build, these would be mapped as full geometry polygons on Google Maps.
 - **Refinement:** More historical data would be needed to refine the wait-time exponential growth algorithms for different types of zones (e.g., restrooms vs. entry gates).
 
