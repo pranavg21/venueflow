@@ -9,6 +9,26 @@ if (!GEMINI_API_KEY) {
 
 const genAI = GEMINI_API_KEY ? new GoogleGenerativeAI(GEMINI_API_KEY) : null;
 
+/**
+ * Retry wrapper with exponential backoff for Gemini API calls.
+ * Handles 429 (rate limit) and 503 (overloaded) errors gracefully.
+ */
+async function withRetry<T>(fn: () => Promise<T>, maxRetries = 3): Promise<T> {
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error: unknown) {
+      const status = (error as { status?: number }).status;
+      const isRetryable = status === 429 || status === 503;
+      if (!isRetryable || attempt === maxRetries) throw error;
+      const delay = Math.pow(2, attempt) * 1000; // 1s, 2s, 4s
+      console.warn(`Gemini rate limited (${status}), retrying in ${delay}ms...`);
+      await new Promise(r => setTimeout(r, delay));
+    }
+  }
+  throw new Error('Retry exhausted');
+}
+
 const VENUE_CONTEXT = `You are VenueFlow AI, an intelligent assistant for Wankhede Stadium in Mumbai, India.
 The stadium has a capacity of approximately 33,000 and is used primarily for cricket matches.
 You help attendees navigate the venue and find the best facilities based on LIVE crowd data.
@@ -81,7 +101,7 @@ Respond helpfully based on the live data above. If this is a follow-up question,
 
   try {
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
-    const result = await model.generateContent(prompt);
+    const result = await withRetry(() => model.generateContent(prompt));
     const text = result.response.text();
     return text ?? 'I apologize, I could not generate a response. Please try again.';
   } catch (error) {
@@ -115,7 +135,7 @@ Generate 3-5 specific, actionable crowd management recommendations based on this
 
   try {
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
-    const result = await model.generateContent(prompt);
+    const result = await withRetry(() => model.generateContent(prompt));
     const text = result.response.text();
     // Split numbered list into individual recommendations
     const recommendations = text
@@ -159,7 +179,7 @@ Assess this alert in the context of current crowd conditions and suggest 2-3 spe
 
   try {
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
-    const result = await model.generateContent(prompt);
+    const result = await withRetry(() => model.generateContent(prompt));
     const text = result.response.text();
     return text ?? 'Unable to triage this alert automatically.';
   } catch (error) {
