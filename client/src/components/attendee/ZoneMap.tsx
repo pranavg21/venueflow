@@ -49,6 +49,7 @@ export default function ZoneMap() {
   }, []);
 
   useEffect(() => {
+    if (loading) return; // Don't try to init map if ref isn't rendered yet
     // Wait for Google Maps script to load
     const checkAndInit = () => {
       if (window.google?.maps) {
@@ -58,7 +59,7 @@ export default function ZoneMap() {
       }
     };
     checkAndInit();
-  }, [initMap]);
+  }, [initMap, loading]);
 
   // Update markers when zone data changes
   useEffect(() => {
