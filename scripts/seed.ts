@@ -63,7 +63,7 @@ const zones: Record<string, ZoneData> = {
     type: 'entry',
     capacity: 8000,
     currentOccupancy: 3200, // 40% — clear
-    coordinates: { lat: 18.9398, lng: 72.8254 },
+    coordinates: { lat: 18.93965, lng: 72.82535 }, // North tip of stadium, main gate
     adjacentZones: ['zone-east-food', 'zone-west-food', 'zone-garware'],
   },
   'zone-south-entry': {
@@ -71,7 +71,7 @@ const zones: Record<string, ZoneData> = {
     type: 'entry',
     capacity: 7000,
     currentOccupancy: 5250, // 75% — crowded
-    coordinates: { lat: 18.9378, lng: 72.8254 },
+    coordinates: { lat: 18.93775, lng: 72.82530 }, // South tip of stadium
     adjacentZones: ['zone-east-food', 'zone-west-food', 'zone-sachin'],
   },
   'zone-east-food': {
@@ -79,7 +79,7 @@ const zones: Record<string, ZoneData> = {
     type: 'concession',
     capacity: 3000,
     currentOccupancy: 1800, // 60% — moderate
-    coordinates: { lat: 18.9388, lng: 72.8268 },
+    coordinates: { lat: 18.93870, lng: 72.82650 }, // East perimeter of oval
     adjacentZones: ['zone-north-entry', 'zone-south-entry', 'zone-garware', 'zone-sachin'],
   },
   'zone-west-food': {
@@ -87,7 +87,7 @@ const zones: Record<string, ZoneData> = {
     type: 'concession',
     capacity: 2500,
     currentOccupancy: 2125, // 85% — critical
-    coordinates: { lat: 18.9388, lng: 72.8240 },
+    coordinates: { lat: 18.93870, lng: 72.82420 }, // West perimeter of oval
     adjacentZones: ['zone-north-entry', 'zone-south-entry', 'zone-garware', 'zone-sachin'],
   },
   'zone-garware': {
@@ -95,7 +95,7 @@ const zones: Record<string, ZoneData> = {
     type: 'restroom',
     capacity: 1500,
     currentOccupancy: 750, // 50% — moderate
-    coordinates: { lat: 18.9394, lng: 72.8244 },
+    coordinates: { lat: 18.93930, lng: 72.82450 }, // Northwest area of stadium
     adjacentZones: ['zone-north-entry', 'zone-east-food', 'zone-west-food', 'zone-sachin'],
   },
   'zone-sachin': {
@@ -103,7 +103,7 @@ const zones: Record<string, ZoneData> = {
     type: 'restroom',
     capacity: 1200,
     currentOccupancy: 1080, // 90% — critical
-    coordinates: { lat: 18.9382, lng: 72.8264 },
+    coordinates: { lat: 18.93810, lng: 72.82620 }, // Southeast area of stadium
     adjacentZones: ['zone-south-entry', 'zone-east-food', 'zone-west-food', 'zone-garware'],
   },
 };
