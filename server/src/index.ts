@@ -12,6 +12,9 @@ import simulateRoutes from './routes/simulate';
 const app = express();
 const PORT = parseInt(process.env.PORT ?? '8080', 10);
 
+// Cloud Run sits behind a load balancer — trust proxy headers
+app.set('trust proxy', 1);
+
 // ─── Body parsing ───
 app.use(express.json({ limit: '1mb' }));
 
