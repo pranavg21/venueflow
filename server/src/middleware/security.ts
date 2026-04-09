@@ -10,33 +10,10 @@ import { Express } from 'express';
  * - Rate limiting: general + stricter limits for AI endpoints
  */
 export function applySecurityMiddleware(app: Express): void {
-  // Security headers via Helmet
+  // Security headers via Helmet (CSP disabled — Google Maps dynamically loads
+  // scripts from many subdomains that cannot be fully whitelisted)
   app.use(helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", "'unsafe-inline'", 'https://maps.googleapis.com', 'https://maps.gstatic.com'],
-        styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
-        fontSrc: ["'self'", 'https://fonts.gstatic.com'],
-        imgSrc: ["'self'", 'data:', 'blob:', 'https://*.googleapis.com', 'https://*.gstatic.com', 'https://*.google.com', 'https://*.ggpht.com'],
-        connectSrc: [
-          "'self'",
-          'https://*.firebaseio.com',
-          'wss://*.firebaseio.com',
-          'https://*.firebasedatabase.app',
-          'wss://*.firebasedatabase.app',
-          'https://*.googleapis.com',
-          'https://fonts.gstatic.com',
-          'https://fonts.googleapis.com',
-          'https://maps.gstatic.com',
-          'https://maps.googleapis.com',
-          'https://generativelanguage.googleapis.com',
-        ],
-        workerSrc: ["'self'"],
-        frameSrc: ["'none'"],
-        objectSrc: ["'none'"],
-      },
-    },
+    contentSecurityPolicy: false,
     crossOriginEmbedderPolicy: false, // Required for Google Maps
   }));
 
