@@ -1,0 +1,57 @@
+import express from 'express';
+import path from 'path';
+import { applySecurityMiddleware, generalLimiter } from './middleware/security';
+import zoneRoutes from './routes/zones';
+import alertRoutes from './routes/alerts';
+import aiRoutes from './routes/ai';
+import healthRoutes from './routes/health';
+import simulateRoutes from './routes/simulate';
+
+const app = express();
+const PORT = parseInt(process.env.PORT ?? '8080', 10);
+
+// ─── Body parsing ───
+app.use(express.json({ limit: '1mb' }));
+
+// ─── Security (Helmet, CORS, etc.) ───
+applySecurityMiddleware(app);
+
+// ─── General rate limiting ───
+app.use('/api/', generalLimiter);
+
+// ─── API Routes ───
+app.use('/api/health', healthRoutes);
+app.use('/api/zones', zoneRoutes);
+app.use('/api/alerts', alertRoutes);
+app.use('/api/ai', aiRoutes);
+app.use('/api/simulate', simulateRoutes);
+
+// ─── Serve static frontend in production ───
+if (process.env.NODE_ENV === 'production') {
+  const clientDistPath = path.join(__dirname, '..', '..', 'client', 'dist');
+  app.use(express.static(clientDistPath));
+
+  // SPA fallback — serve index.html for all non-API routes
+  app.get('*', (_req, res) => {
+    res.sendFile(path.join(clientDistPath, 'index.html'));
+  });
+}
+
+// ─── Global error handler ───
+app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction): void => {
+  console.error('Unhandled error:', err.message);
+  res.status(500).json({
+    error: process.env.NODE_ENV === 'production'
+      ? 'Internal server error'
+      : err.message,
+  });
+});
+
+// ─── Start server ───
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🏟️  VenueFlow server running on port ${PORT}`);
+  console.log(`   Environment: ${process.env.NODE_ENV ?? 'development'}`);
+  console.log(`   Health check: http://localhost:${PORT}/api/health`);
+});
+
+export default app;
