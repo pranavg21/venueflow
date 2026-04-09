@@ -20,6 +20,11 @@ export function useAlerts(statusFilter?: string): UseAlertsResult {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!firebaseDb) {
+      setLoading(false);
+      return;
+    }
+
     const alertsRef = ref(firebaseDb, 'alerts');
 
     const unsubscribe = onValue(

@@ -1,7 +1,6 @@
 
 import { useZones } from '../../context/ZoneContext';
 import ZoneStatusCard from './ZoneStatusCard';
-import LoadingSpinner from '../shared/LoadingSpinner';
 
 /**
  * Grid of all venue zones with real-time status.

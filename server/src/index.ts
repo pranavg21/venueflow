@@ -1,5 +1,7 @@
 import express from 'express';
 import path from 'path';
+import dotenv from 'dotenv';
+dotenv.config({ path: path.join(process.cwd(), '../.env') });
 import { applySecurityMiddleware, generalLimiter } from './middleware/security';
 import zoneRoutes from './routes/zones';
 import alertRoutes from './routes/alerts';
@@ -32,7 +34,7 @@ if (process.env.NODE_ENV === 'production') {
   app.use(express.static(clientDistPath));
 
   // SPA fallback — serve index.html for all non-API routes
-  app.get('*', (_req, res) => {
+  app.get(/.*/, (_req, res) => {
     res.sendFile(path.join(clientDistPath, 'index.html'));
   });
 }

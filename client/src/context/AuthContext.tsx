@@ -43,6 +43,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signIn = useCallback(async (email: string, password: string) => {
     setError(null);
     try {
+      if (!firebaseAuth) throw new Error('Auth disabled in Mock Mode');
       await signInWithEmailAndPassword(firebaseAuth, email, password);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Sign in failed';
@@ -54,7 +55,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = useCallback(async () => {
     setError(null);
     try {
-      await firebaseSignOut(firebaseAuth);
+      if (firebaseAuth) await firebaseSignOut(firebaseAuth);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Sign out failed';
       setError(message);

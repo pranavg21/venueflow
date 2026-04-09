@@ -14,11 +14,11 @@ const ZoneContext = createContext<ZoneContextValue | null>(null);
 
 // Example seed data for mock mode
 const MOCK_INITIAL_ZONES: Zone[] = [
-  { id: 'gate_a', name: 'Gate A Entrance', type: 'entry', capacity: 2000, currentOccupancy: 850, status: 'moderate', waitTimeMinutes: 12, coordinates: { lat: 18.9388, lng: 72.8252 }, lastUpdated: Date.now() },
-  { id: 'gate_b', name: 'Gate B Entrance', type: 'entry', capacity: 2000, currentOccupancy: 1800, status: 'critical', waitTimeMinutes: 45, coordinates: { lat: 18.9385, lng: 72.8250 }, lastUpdated: Date.now() },
-  { id: 'food_1', name: 'Food Court North', type: 'concession', capacity: 1000, currentOccupancy: 700, status: 'crowded', waitTimeMinutes: 20, coordinates: { lat: 18.9390, lng: 72.8255 }, lastUpdated: Date.now() },
-  { id: 'rest_1', name: 'Restrooms East', type: 'restroom', capacity: 300, currentOccupancy: 120, status: 'clear', waitTimeMinutes: 2, coordinates: { lat: 18.9387, lng: 72.8258 }, lastUpdated: Date.now() },
-  { id: 'stand_v', name: 'V. Mankad Stand', type: 'seating', capacity: 5000, currentOccupancy: 4200, status: 'crowded', waitTimeMinutes: 0, coordinates: { lat: 18.9389, lng: 72.8251 }, lastUpdated: Date.now() },
+  { id: 'gate_a', name: 'Gate A Entrance', type: 'entry', capacity: 2000, currentOccupancy: 850, status: 'moderate', waitTimeMinutes: 12, coordinates: { lat: 18.9388, lng: 72.8252 }, lastUpdated: Date.now(), updatedBy: 'system', adjacentZones: [] },
+  { id: 'gate_b', name: 'Gate B Entrance', type: 'entry', capacity: 2000, currentOccupancy: 1800, status: 'critical', waitTimeMinutes: 45, coordinates: { lat: 18.9385, lng: 72.8250 }, lastUpdated: Date.now(), updatedBy: 'system', adjacentZones: [] },
+  { id: 'food_1', name: 'Food Court North', type: 'concession', capacity: 1000, currentOccupancy: 700, status: 'crowded', waitTimeMinutes: 20, coordinates: { lat: 18.9390, lng: 72.8255 }, lastUpdated: Date.now(), updatedBy: 'system', adjacentZones: [] },
+  { id: 'rest_1', name: 'Restrooms East', type: 'restroom', capacity: 300, currentOccupancy: 120, status: 'clear', waitTimeMinutes: 2, coordinates: { lat: 18.9387, lng: 72.8258 }, lastUpdated: Date.now(), updatedBy: 'system', adjacentZones: [] },
+  { id: 'stand_v', name: 'V. Mankad Stand', type: 'seating', capacity: 5000, currentOccupancy: 4200, status: 'crowded', waitTimeMinutes: 0, coordinates: { lat: 18.9389, lng: 72.8251 }, lastUpdated: Date.now(), updatedBy: 'system', adjacentZones: [] },
 ];
 
 export function ZoneProvider({ children }: { children: React.ReactNode }) {

@@ -23,7 +23,7 @@ async function apiFetch<T>(
   };
 
   // Inject auth token if a user is signed in
-  const user = firebaseAuth.currentUser;
+  const user = firebaseAuth?.currentUser;
   if (user) {
     const token = await user.getIdToken();
     headers['Authorization'] = `Bearer ${token}`;

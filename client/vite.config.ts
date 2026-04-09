@@ -1,4 +1,5 @@
 import { defineConfig, loadEnv, type Plugin } from 'vite';
+import path from 'path';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
@@ -12,7 +13,7 @@ function htmlEnvPlugin(): Plugin {
   return {
     name: 'html-env-vars',
     configResolved(config) {
-      env = loadEnv(config.mode, process.cwd(), 'VITE_');
+      env = loadEnv(config.mode, path.resolve(process.cwd(), '../'), 'VITE_');
     },
     transformIndexHtml(html) {
       return html.replace(/__VITE_(\w+)__/g, (_match, key) => {
@@ -23,6 +24,7 @@ function htmlEnvPlugin(): Plugin {
 }
 
 export default defineConfig({
+  envDir: '../',
   plugins: [
     react(),
     htmlEnvPlugin(),

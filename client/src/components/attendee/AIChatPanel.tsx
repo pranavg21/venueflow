@@ -80,8 +80,7 @@ export default function AIChatPanel() {
 
   const handleQuickQuestion = (q: string) => {
     setInput(q);
-    // Use a synthetic event to trigger the main submit handler
-    const fakeEvent = { preventDefault: () => {} } as React.FormEvent;
+    
     
     // We must manually pass 'q' inside because state updates are async
     const trimmed = q.trim();
