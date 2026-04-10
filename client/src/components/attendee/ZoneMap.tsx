@@ -26,6 +26,7 @@ export default function ZoneMap() {
   const mapInstanceRef = useRef<google.maps.Map | null>(null);
   const markersRef = useRef<google.maps.Marker[]>([]);
   const [mapsReady, setMapsReady] = useState(!!window.google?.maps);
+  const [mapInited, setMapInited] = useState(false);
   const [mapError, setMapError] = useState<string | null>(null);
 
   // Load Google Maps dynamically
@@ -84,6 +85,7 @@ export default function ZoneMap() {
   useEffect(() => {
     if (mapsReady && !mapInstanceRef.current) {
       initMap();
+      setMapInited(true);
     }
   }, [mapsReady, initMap]);
 
@@ -132,7 +134,7 @@ export default function ZoneMap() {
 
       markersRef.current.push(marker);
     });
-  }, [zones]);
+  }, [zones, mapInited]);
 
   if (loading) {
     return <LoadingSpinner label="Loading venue map..." />;
