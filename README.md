@@ -23,17 +23,16 @@ Large venues suffer from congestion, long wait times, and safety risks during pe
 
 ## Google Services Integration
 
-VenueFlow meaningfully integrates **5 Google Cloud services** across the entire stack:
+VenueFlow meaningfully integrates **6 Google Cloud services** across the entire stack:
 
 | Service | Integration | Files |
 |---------|-------------|-------|
 | **Firebase Authentication** | Email/password login with custom claims for role-based access control (staff vs. attendee). Server-side token verification via Firebase Admin SDK. | `middleware/auth.ts`, `hooks/useAuth.ts` |
 | **Firebase Realtime Database** | Push-based WebSocket sync for live zone occupancy, alerts, and simulation state. Zero-polling architecture — all updates are instant. | `services/firebase-admin.ts`, `context/ZoneContext.tsx` |
 | **Google Maps JavaScript API** | Satellite view with color-coded SVG circle markers (congestion-level), clickable InfoWindows, polyline navigation routes. Dynamic loading with retry. | `components/attendee/ZoneMap.tsx`, `NavigationPanel.tsx` |
-| **Gemini 2.5 Flash (AI/ML API)** | Three AI workflows: (1) Attendee chat grounded in live zone data, (2) Staff crowd management recommendations, (3) Automated alert triage. Includes conversation history and retry with exponential backoff. | `services/gemini.ts`, `routes/ai.ts` |
+| **Vertex AI (Gemini 2.5 Flash)** | Three AI workflows via Google Cloud's Vertex AI platform: (1) Attendee chat grounded in live zone data, (2) Staff crowd management recommendations, (3) Automated alert triage. Includes conversation history, retry with exponential backoff, and dual-mode provider (Vertex AI in production, direct SDK in development). | `services/gemini.ts`, `routes/ai.ts` |
 | **Google Cloud Logging** | Structured JSON logging with severity levels (INFO/WARNING/ERROR) for all server operations. Replaces raw `console.log` — enables Cloud Monitoring dashboards and alerting. | `services/logger.ts` |
-
-**Deployment Platform:** Google Cloud Run (fully managed, auto-scaling container runtime)
+| **Google Cloud Run** | Fully managed, auto-scaling container runtime. Multi-stage Docker build for minimal image size. Health checks, trust proxy for load balancer headers. | `Dockerfile`, `server/src/index.ts` |
 
 ## Assumptions & Refinements Needed
 To build this prototype within the hackathon time constraints, several assumptions were made:
@@ -62,4 +61,4 @@ To build this prototype within the hackathon time constraints, several assumptio
 - **Efficiency:** Zero-polling WebSocket architecture, `useMemo` context optimization, O(1) zone lookups, server-side pathfinding, code splitting, and PWA caching.
 - **Testing:** 32 passing unit tests covering zone status derivation, wait time algorithms, Dijkstra pathfinding, and API validation schemas.
 - **Accessibility:** 60+ ARIA attributes, `aria-live` regions, full WCAG tab patterns, semantic HTML, keyboard navigation, and `prefers-reduced-motion` support.
-- **Google Services:** 5 deeply integrated services — Firebase Auth, Firebase RTDB, Google Maps JS API, Gemini 2.5 Flash AI, and Google Cloud Logging — plus deployment on Google Cloud Run.
+- **Google Services:** 6 deeply integrated services — Firebase Auth, Firebase RTDB, Google Maps JS API, Vertex AI (Gemini 2.5 Flash), Google Cloud Logging, and Google Cloud Run.

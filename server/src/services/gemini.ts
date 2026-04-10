@@ -1,14 +1,71 @@
+import { VertexAI } from '@google-cloud/vertexai';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { logWarning, logError } from './logger';
+import { logInfo, logWarning, logError } from './logger';
 import type { Zone, Alert } from '../types';
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+/**
+ * Gemini AI service for VenueFlow.
+ *
+ * Uses Google Cloud Vertex AI when running on Cloud Run (production),
+ * falling back to the direct Gemini API SDK for local development.
+ * This dual-mode approach ensures the service works in both environments.
+ *
+ * @see https://cloud.google.com/vertex-ai/generative-ai/docs/start/quickstarts/quickstart-multimodal
+ */
 
-if (!GEMINI_API_KEY) {
-  logWarning('GEMINI_API_KEY not set — AI features will be unavailable');
+const GCP_PROJECT = process.env.GOOGLE_CLOUD_PROJECT ?? process.env.GCLOUD_PROJECT ?? 'venueflow-80ead';
+const GCP_LOCATION = 'asia-south1';
+const GEMINI_MODEL = 'gemini-2.5-flash';
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const isProduction = process.env.NODE_ENV === 'production';
+
+/**
+ * Abstraction over the Gemini model — works with both Vertex AI and direct SDK.
+ */
+interface GeminiProvider {
+  generateContent(prompt: string): Promise<string>;
 }
 
-const genAI = GEMINI_API_KEY ? new GoogleGenerativeAI(GEMINI_API_KEY) : null;
+/** Vertex AI provider — used in production (Cloud Run has implicit service account auth). */
+function createVertexProvider(): GeminiProvider | null {
+  try {
+    const vertexAI = new VertexAI({ project: GCP_PROJECT, location: GCP_LOCATION });
+    const model = vertexAI.getGenerativeModel({ model: GEMINI_MODEL });
+    logInfo('Gemini initialized via Vertex AI', { project: GCP_PROJECT, location: GCP_LOCATION, model: GEMINI_MODEL });
+    return {
+      async generateContent(prompt: string): Promise<string> {
+        const result = await model.generateContent(prompt);
+        const text = result.response?.candidates?.[0]?.content?.parts?.[0]?.text;
+        return text ?? '';
+      },
+    };
+  } catch (err) {
+    logWarning('Vertex AI initialization failed, will use direct SDK', { error: String(err) });
+    return null;
+  }
+}
+
+/** Direct Gemini SDK provider — used in local development. */
+function createDirectProvider(): GeminiProvider | null {
+  if (!GEMINI_API_KEY) {
+    logWarning('GEMINI_API_KEY not set — AI features will be unavailable');
+    return null;
+  }
+  const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+  logInfo('Gemini initialized via direct API key');
+  return {
+    async generateContent(prompt: string): Promise<string> {
+      const model = genAI.getGenerativeModel({ model: GEMINI_MODEL });
+      const result = await model.generateContent(prompt);
+      return result.response.text() ?? '';
+    },
+  };
+}
+
+// Initialize: prefer Vertex AI in production, fall back to direct SDK
+const provider: GeminiProvider | null = isProduction
+  ? (createVertexProvider() ?? createDirectProvider())
+  : (createDirectProvider() ?? createVertexProvider());
 
 /**
  * Retry wrapper with exponential backoff for Gemini API calls.
@@ -70,13 +127,14 @@ function formatAlertContext(alerts: Alert[]): string {
 /**
  * Attendee AI Chat — answers natural language questions grounded in live zone data.
  * Supports multi-turn conversation by including recent message history.
+ * Uses Vertex AI (production) or direct Gemini SDK (development).
  */
 export async function chatWithContext(
   userMessage: string,
   zones: Zone[],
   history?: Array<{ role: string; content: string }>
 ): Promise<string> {
-  if (!genAI) {
+  if (!provider) {
     return 'AI features are currently unavailable. Please check back later.';
   }
 
@@ -101,10 +159,8 @@ ATTENDEE QUESTION: ${userMessage}
 Respond helpfully based on the live data above. If this is a follow-up question, use the conversation context:`;
 
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
-    const result = await withRetry(() => model.generateContent(prompt));
-    const text = result.response.text();
-    return text ?? 'I apologize, I could not generate a response. Please try again.';
+    const text = await withRetry(() => provider.generateContent(prompt));
+    return text || 'I apologize, I could not generate a response. Please try again.';
   } catch (error) {
     logError('Gemini chat error', error);
     return 'I encountered an issue processing your request. Please try again in a moment.';
@@ -113,12 +169,13 @@ Respond helpfully based on the live data above. If this is a follow-up question,
 
 /**
  * Staff AI Recommendations — generates crowd management advice from live data.
+ * Uses Vertex AI (production) or direct Gemini SDK (development).
  */
 export async function generateRecommendations(
   zones: Zone[],
   alerts: Alert[]
 ): Promise<string[]> {
-  if (!genAI) {
+  if (!provider) {
     return ['AI features are currently unavailable. Please check your Gemini API key configuration.'];
   }
 
@@ -135,9 +192,7 @@ ${alertContext}
 Generate 3-5 specific, actionable crowd management recommendations based on this data:`;
 
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
-    const result = await withRetry(() => model.generateContent(prompt));
-    const text = result.response.text();
+    const text = await withRetry(() => provider.generateContent(prompt));
     // Split numbered list into individual recommendations
     const recommendations = text
       .split(/\n(?=\d+\.)/)
@@ -155,12 +210,13 @@ Generate 3-5 specific, actionable crowd management recommendations based on this
 /**
  * Alert Triage — assesses an alert and suggests response actions.
  * Only triggered when the zone is "crowded" or "critical" (debounced in route handler).
+ * Uses Vertex AI (production) or direct Gemini SDK (development).
  */
 export async function triageAlert(
   alert: Alert,
   zones: Zone[]
 ): Promise<string> {
-  if (!genAI) {
+  if (!provider) {
     return 'AI triage unavailable.';
   }
 
@@ -179,10 +235,8 @@ ${zoneContext}
 Assess this alert in the context of current crowd conditions and suggest 2-3 specific immediate response actions:`;
 
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
-    const result = await withRetry(() => model.generateContent(prompt));
-    const text = result.response.text();
-    return text ?? 'Unable to triage this alert automatically.';
+    const text = await withRetry(() => provider.generateContent(prompt));
+    return text || 'Unable to triage this alert automatically.';
   } catch (error) {
     logError('Gemini triage error', error);
     return 'Automatic triage failed. Please assess manually.';
