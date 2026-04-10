@@ -156,7 +156,7 @@ export function findLeastCongestedPath(
   }
 
   // Verify path starts at the start zone
-  if (path.length === 0 || path[0].zoneId !== startZoneId) {
+  if (path.length === 0 || path[0]?.zoneId !== startZoneId) {
     return null; // No path found
   }
 

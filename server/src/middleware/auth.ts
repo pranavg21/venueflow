@@ -55,13 +55,14 @@ export async function requireAuth(
  */
 export async function optionalAuth(
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ): Promise<void> {
   const authHeader = req.headers.authorization;
 
   if (authHeader?.startsWith('Bearer ')) {
     const idToken = authHeader.split('Bearer ')[1];
+    if (!idToken) return;
     try {
       const decoded = await auth.verifyIdToken(idToken);
       req.auth = {
