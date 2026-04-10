@@ -4,6 +4,7 @@ import { db } from '../services/firebase-admin';
 import { requireAuth } from '../middleware/auth';
 import { validate } from '../middleware/validation';
 import { deriveStatus, estimateWaitTime, findLeastCongestedPath } from '../services/zone-calculator';
+import { logError } from '../services/logger';
 import type { Zone } from '../types';
 
 const router = Router();
@@ -40,7 +41,7 @@ router.get('/', async (_req: Request, res: Response): Promise<void> => {
 
     res.json(zones);
   } catch (error) {
-    console.error('Error fetching zones:', error);
+    logError('Error fetching zones', error);
     res.status(500).json({ error: 'Failed to fetch zones' });
   }
 });
@@ -86,7 +87,7 @@ router.patch(
 
       res.json({ id, ...updates });
     } catch (error) {
-      console.error('Error updating zone occupancy:', error);
+      logError('Error updating zone occupancy', error, { zoneId: req.params.id });
       res.status(500).json({ error: 'Failed to update zone occupancy' });
     }
   }
@@ -142,7 +143,7 @@ router.post(
 
       res.json(result);
     } catch (error) {
-      console.error('Error computing navigation:', error);
+      logError('Error computing navigation', error);
       res.status(500).json({ error: 'Failed to compute navigation path' });
     }
   }

@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { auth } from '../services/firebase-admin';
+import { logError } from '../services/logger';
 
 /**
  * Middleware that verifies Firebase ID tokens from the Authorization header.
@@ -43,7 +44,7 @@ export async function requireAuth(
 
     next();
   } catch (error) {
-    console.error('Token verification failed:', error);
+    logError('Token verification failed', error);
     res.status(401).json({ error: 'Invalid or expired authentication token' });
   }
 }

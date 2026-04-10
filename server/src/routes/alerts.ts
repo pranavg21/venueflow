@@ -4,6 +4,7 @@ import { db } from '../services/firebase-admin';
 import { requireAuth } from '../middleware/auth';
 import { validate } from '../middleware/validation';
 import { triageAlert } from '../services/gemini';
+import { logError } from '../services/logger';
 import type { Zone, Alert } from '../types';
 
 const router = Router();
@@ -46,7 +47,7 @@ router.get('/', requireAuth, async (req: Request, res: Response): Promise<void> 
 
     res.json(alerts);
   } catch (error) {
-    console.error('Error fetching alerts:', error);
+    logError('Error fetching alerts', error);
     res.status(500).json({ error: 'Failed to fetch alerts' });
   }
 });
@@ -111,7 +112,7 @@ router.post(
         ...(triageResponse ? { triageAdvice: triageResponse } : {}),
       });
     } catch (error) {
-      console.error('Error creating alert:', error);
+      logError('Error creating alert', error);
       res.status(500).json({ error: 'Failed to create alert' });
     }
   }
@@ -140,7 +141,7 @@ router.patch(
 
       res.json({ id, status: 'acknowledged' });
     } catch (error) {
-      console.error('Error acknowledging alert:', error);
+      logError('Error acknowledging alert', error, { alertId: req.params.id });
       res.status(500).json({ error: 'Failed to acknowledge alert' });
     }
   }
@@ -171,7 +172,7 @@ router.patch(
 
       res.json({ id, status: 'resolved', resolvedAt: Date.now() });
     } catch (error) {
-      console.error('Error resolving alert:', error);
+      logError('Error resolving alert', error, { alertId: req.params.id });
       res.status(500).json({ error: 'Failed to resolve alert' });
     }
   }

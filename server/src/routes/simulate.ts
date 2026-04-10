@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { db } from '../services/firebase-admin';
 import { deriveStatus, estimateWaitTime } from '../services/zone-calculator';
+import { logError } from '../services/logger';
 import type { Zone } from '../types';
 
 const router = Router();
@@ -48,7 +49,7 @@ router.post('/tick', async (_req: Request, res: Response): Promise<void> => {
     await db.ref().update(updates);
     res.json({ updated: results.length, zones: results });
   } catch (error) {
-    console.error('Simulation tick error:', error);
+    logError('Simulation tick error', error);
     res.status(500).json({ error: 'Simulation tick failed' });
   }
 });

@@ -1,10 +1,11 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { logWarning, logError } from './logger';
 import type { Zone, Alert } from '../types';
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
 if (!GEMINI_API_KEY) {
-  console.warn('GEMINI_API_KEY not set — AI features will be unavailable');
+  logWarning('GEMINI_API_KEY not set — AI features will be unavailable');
 }
 
 const genAI = GEMINI_API_KEY ? new GoogleGenerativeAI(GEMINI_API_KEY) : null;
@@ -22,7 +23,7 @@ async function withRetry<T>(fn: () => Promise<T>, maxRetries = 3): Promise<T> {
       const isRetryable = status === 429 || status === 503;
       if (!isRetryable || attempt === maxRetries) throw error;
       const delay = Math.pow(2, attempt) * 1000; // 1s, 2s, 4s
-      console.warn(`Gemini rate limited (${status}), retrying in ${delay}ms...`);
+      logWarning(`Gemini rate limited (${status}), retrying in ${delay}ms`);
       await new Promise(r => setTimeout(r, delay));
     }
   }
@@ -105,7 +106,7 @@ Respond helpfully based on the live data above. If this is a follow-up question,
     const text = result.response.text();
     return text ?? 'I apologize, I could not generate a response. Please try again.';
   } catch (error) {
-    console.error('Gemini chat error:', error);
+    logError('Gemini chat error', error);
     return 'I encountered an issue processing your request. Please try again in a moment.';
   }
 }
@@ -146,7 +147,7 @@ Generate 3-5 specific, actionable crowd management recommendations based on this
       ? recommendations
       : ['No specific recommendations at this time. All zones appear to be operating normally.'];
   } catch (error) {
-    console.error('Gemini recommendations error:', error);
+    logError('Gemini recommendations error', error);
     return ['Unable to generate recommendations at this time. Please check zone data manually.'];
   }
 }
@@ -183,7 +184,7 @@ Assess this alert in the context of current crowd conditions and suggest 2-3 spe
     const text = result.response.text();
     return text ?? 'Unable to triage this alert automatically.';
   } catch (error) {
-    console.error('Gemini triage error:', error);
+    logError('Gemini triage error', error);
     return 'Automatic triage failed. Please assess manually.';
   }
 }

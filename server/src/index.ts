@@ -8,6 +8,7 @@ import alertRoutes from './routes/alerts';
 import aiRoutes from './routes/ai';
 import healthRoutes from './routes/health';
 import simulateRoutes from './routes/simulate';
+import { logInfo, logError } from './services/logger';
 
 const app = express();
 const PORT = parseInt(process.env.PORT ?? '8080', 10);
@@ -44,7 +45,7 @@ if (process.env.NODE_ENV === 'production') {
 
 // ─── Global error handler ───
 app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction): void => {
-  console.error('Unhandled error:', err.message);
+  logError('Unhandled error', err);
   res.status(500).json({
     error: process.env.NODE_ENV === 'production'
       ? 'Internal server error'
@@ -54,9 +55,11 @@ app.use((err: Error, _req: express.Request, res: express.Response, _next: expres
 
 // ─── Start server ───
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🏟️  VenueFlow server running on port ${PORT}`);
-  console.log(`   Environment: ${process.env.NODE_ENV ?? 'development'}`);
-  console.log(`   Health check: http://localhost:${PORT}/api/health`);
+  logInfo('VenueFlow server started', {
+    port: PORT,
+    environment: process.env.NODE_ENV ?? 'development',
+    healthCheck: `http://localhost:${PORT}/api/health`,
+  });
 });
 
 export default app;

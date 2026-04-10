@@ -5,6 +5,7 @@ import { requireAuth } from '../middleware/auth';
 import { validate } from '../middleware/validation';
 import { aiChatLimiter, aiRecommendationsLimiter } from '../middleware/security';
 import { chatWithContext, generateRecommendations } from '../services/gemini';
+import { logError } from '../services/logger';
 import type { Zone, Alert } from '../types';
 
 const router = Router();
@@ -59,7 +60,7 @@ router.post(
       const reply = await chatWithContext(message, zones, history);
       res.json({ reply });
     } catch (error) {
-      console.error('AI chat error:', error);
+    logError('AI chat error', error);
       res.status(500).json({ error: 'Failed to process AI chat request' });
     }
   }
@@ -81,7 +82,7 @@ router.post(
       const recommendations = await generateRecommendations(zones, alerts);
       res.json({ recommendations, generatedAt: new Date().toISOString() });
     } catch (error) {
-      console.error('AI recommendations error:', error);
+    logError('AI recommendations error', error);
       res.status(500).json({ error: 'Failed to generate recommendations' });
     }
   }
