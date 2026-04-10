@@ -5,6 +5,7 @@ import StatusBadge from '../shared/StatusBadge';
 import LoadingSpinner from '../shared/LoadingSpinner';
 import { ZONE_TYPE_ICONS } from '../../utils/status';
 import { formatWaitTime } from '../../utils/formatters';
+import { loadGoogleMaps } from '../../utils/loadGoogleMaps';
 import type { NavigationResult } from '../../types';
 
 /** Wankhede Stadium center coordinates */
@@ -29,6 +30,7 @@ export default function NavigationPanel() {
   const [result, setResult] = useState<NavigationResult | null>(null);
   const [navLoading, setNavLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [mapsReady, setMapsReady] = useState(!!window.google?.maps);
 
   // Map refs
   const mapRef = useRef<HTMLDivElement>(null);
@@ -47,6 +49,14 @@ export default function NavigationPanel() {
     zones.forEach(z => m.set(z.id, { lat: z.coordinates.lat, lng: z.coordinates.lng, status: z.status }));
     return m;
   }, [zones]);
+
+  // Load Google Maps dynamically
+  useEffect(() => {
+    if (mapsReady) return;
+    loadGoogleMaps()
+      .then(() => setMapsReady(true))
+      .catch(() => { /* ZoneMap already handles the error display */ });
+  }, [mapsReady]);
 
   // Initialize the navigation map
   const initMap = useCallback(() => {
@@ -69,12 +79,10 @@ export default function NavigationPanel() {
   }, []);
 
   useEffect(() => {
-    const check = () => {
-      if (window.google?.maps) initMap();
-      else setTimeout(check, 500);
-    };
-    check();
-  }, [initMap]);
+    if (mapsReady && !mapInstanceRef.current) {
+      initMap();
+    }
+  }, [mapsReady, initMap]);
 
   // Draw path on map when result changes
   useEffect(() => {

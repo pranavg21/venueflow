@@ -20,12 +20,7 @@
     <link rel="apple-touch-icon" href="/apple-touch-icon.svg" />
     <link rel="manifest" href="/manifest.webmanifest" />
 
-    <!-- Google Maps JS API — key injected at build time via Vite plugin -->
-    <script
-      src="https://maps.googleapis.com/maps/api/js?key=__VITE_GOOGLE_MAPS_API_KEY__&libraries=geometry,marker"
-      async
-      defer
-    ></script>
+    <!-- Google Maps JS API — loaded dynamically by ZoneMap/NavigationPanel with error handling -->
   </head>
   <body>
     <div id="root"></div>

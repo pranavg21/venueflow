@@ -1,6 +1,7 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import { useZones } from '../../context/ZoneContext';
 import LoadingSpinner from '../shared/LoadingSpinner';
+import { loadGoogleMaps, mapsLoadError } from '../../utils/loadGoogleMaps';
 
 /** Wankhede Stadium center coordinates */
 const WANKHEDE_CENTER = { lat: 18.9388, lng: 72.8254 };
@@ -17,21 +18,52 @@ const STATUS_COLORS: Record<string, string> = {
 /**
  * Interactive Google Maps view of Wankhede Stadium with zone markers.
  * Markers are color-coded by congestion status and update in real-time.
- * Uses native Google Maps JS API loaded in index.html.
+ * Dynamically loads Google Maps JS API with error handling and retry.
  */
 export default function ZoneMap() {
   const { zones, loading } = useZones();
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<google.maps.Map | null>(null);
   const markersRef = useRef<google.maps.Marker[]>([]);
+  const [mapsReady, setMapsReady] = useState(!!window.google?.maps);
+  const [mapError, setMapError] = useState<string | null>(null);
+
+  // Load Google Maps dynamically
+  useEffect(() => {
+    if (loading || mapsReady) return;
+
+    loadGoogleMaps()
+      .then(() => {
+        setMapsReady(true);
+        setMapError(null);
+      })
+      .catch((err: Error) => {
+        setMapError(err.message || mapsLoadError || 'Failed to load Google Maps');
+      });
+  }, [loading, mapsReady]);
+
+  // Listen for Google Maps auth failures (RefererNotAllowedMapError etc.)
+  useEffect(() => {
+    const handleAuthFailure = () => {
+      setMapError(
+        'Google Maps API key authorization failed (RefererNotAllowedMapError). ' +
+        'Please update the API key\'s HTTP referrer restrictions in the Google Cloud Console ' +
+        'to include this domain.'
+      );
+    };
+
+    // Google Maps calls this global function on auth errors
+    (window as unknown as Record<string, unknown>).gm_authFailure = handleAuthFailure;
+
+    return () => {
+      delete (window as unknown as Record<string, unknown>).gm_authFailure;
+    };
+  }, []);
 
   // Initialize map
   const initMap = useCallback(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
-    if (!window.google?.maps) {
-      console.warn('Google Maps not loaded yet');
-      return;
-    }
+    if (!window.google?.maps) return;
 
     mapInstanceRef.current = new google.maps.Map(mapRef.current, {
       center: WANKHEDE_CENTER,
@@ -48,18 +80,12 @@ export default function ZoneMap() {
     });
   }, []);
 
+  // Init once Maps is ready
   useEffect(() => {
-    if (loading) return; // Don't try to init map if ref isn't rendered yet
-    // Wait for Google Maps script to load
-    const checkAndInit = () => {
-      if (window.google?.maps) {
-        initMap();
-      } else {
-        setTimeout(checkAndInit, 500);
-      }
-    };
-    checkAndInit();
-  }, [initMap, loading]);
+    if (mapsReady && !mapInstanceRef.current) {
+      initMap();
+    }
+  }, [mapsReady, initMap]);
 
   // Update markers when zone data changes
   useEffect(() => {
@@ -116,12 +142,30 @@ export default function ZoneMap() {
     <section className="zone-map-container" aria-label="Wankhede Stadium venue map">
       <h2 className="section-title">Wankhede Stadium — Live Map</h2>
       <p className="section-subtitle">Zones are color-coded by congestion level. Click a marker for details.</p>
+
+      {mapError && (
+        <div className="map-error" role="alert" aria-live="assertive">
+          <span aria-hidden="true" className="map-error__icon">⚠️</span>
+          <div className="map-error__content">
+            <strong>Map Unavailable</strong>
+            <p>{mapError}</p>
+          </div>
+        </div>
+      )}
+
+      {!mapsReady && !mapError && (
+        <div className="map-loading" aria-live="polite">
+          <LoadingSpinner label="Loading Google Maps..." />
+        </div>
+      )}
+
       <div
         ref={mapRef}
         className="zone-map"
         role="img"
         aria-label="Interactive map of Wankhede Stadium showing real-time zone congestion levels"
         tabIndex={0}
+        style={{ display: mapsReady && !mapError ? 'block' : 'none' }}
       />
       {/* Accessible legend */}
       <div className="map-legend" role="list" aria-label="Map color legend">
