@@ -1,4 +1,4 @@
-import { initializeApp } from 'firebase/app';
+import { initializeApp, type FirebaseApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getDatabase } from 'firebase/database';
 
@@ -18,13 +18,13 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-const app = isFirebaseConfigured ? initializeApp(firebaseConfig) : ({} as any);
+const app: FirebaseApp | null = isFirebaseConfigured ? initializeApp(firebaseConfig) : null;
 
 /** Firebase Auth instance */
-export const firebaseAuth = isFirebaseConfigured ? getAuth(app) : null;
+export const firebaseAuth = app ? getAuth(app) : null;
 
 /** Firebase Realtime Database instance */
-export const firebaseDb = isFirebaseConfigured ? getDatabase(app) : null;
+export const firebaseDb = app ? getDatabase(app) : null;
 
 export const useMockMode = !isFirebaseConfigured;
 

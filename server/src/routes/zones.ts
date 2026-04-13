@@ -9,13 +9,11 @@ import type { Zone } from '../types';
 
 const router = Router();
 
-/** Zod schema for occupancy update */
-const updateOccupancySchema = z.object({
+export const updateOccupancySchema = z.object({
   currentOccupancy: z.number().int().min(0).max(100000),
 });
 
-/** Zod schema for navigation request */
-const navigationSchema = z.object({
+export const navigationSchema = z.object({
   startZoneId: z.string().min(1),
   endZoneId: z.string().min(1),
 });

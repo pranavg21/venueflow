@@ -10,8 +10,7 @@ import type { Zone, Alert } from '../types';
 
 const router = Router();
 
-/** Zod schema for AI chat message */
-const chatSchema = z.object({
+export const chatSchema = z.object({
   message: z.string().min(1, 'Message is required').max(500, 'Message too long'),
   history: z.array(z.object({
     role: z.string(),
@@ -60,7 +59,7 @@ router.post(
       const reply = await chatWithContext(message, zones, history);
       res.json({ reply });
     } catch (error) {
-    logError('AI chat error', error);
+      logError('AI chat error', error);
       res.status(500).json({ error: 'Failed to process AI chat request' });
     }
   }
@@ -82,7 +81,7 @@ router.post(
       const recommendations = await generateRecommendations(zones, alerts);
       res.json({ recommendations, generatedAt: new Date().toISOString() });
     } catch (error) {
-    logError('AI recommendations error', error);
+      logError('AI recommendations error', error);
       res.status(500).json({ error: 'Failed to generate recommendations' });
     }
   }

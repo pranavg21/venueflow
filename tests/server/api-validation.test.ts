@@ -1,12 +1,12 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 
 /**
- * Tests for zone API routes.
- * These test the route handler logic by mocking Firebase and verifying
- * correct response codes, validation, and data transformations.
+ * Tests for API validation schemas.
+ * Imports the ACTUAL Zod schemas used in production routes — not re-created copies.
+ * This ensures tests validate the same logic that runs in production.
  */
 
-// Mock Firebase Admin
+// Mock Firebase Admin (required because route files import it at module level)
 vi.mock('../../server/src/services/firebase-admin', () => {
   const mockRef = vi.fn();
   const mockOnce = vi.fn();
@@ -29,84 +29,77 @@ vi.mock('../../server/src/services/firebase-admin', () => {
   };
 });
 
-describe('Zone API Logic', () => {
-  describe('Occupancy update validation', () => {
-    it('rejects negative occupancy', () => {
-      const { z } = require('zod');
-      const schema = z.object({
-        currentOccupancy: z.number().int().min(0).max(100000),
-      });
+// Mock Gemini service (imported by alerts route)
+vi.mock('../../server/src/services/gemini', () => ({
+  triageAlert: vi.fn(),
+  chatWithContext: vi.fn(),
+  generateRecommendations: vi.fn(),
+}));
 
-      const result = schema.safeParse({ currentOccupancy: -1 });
-      expect(result.success).toBe(false);
-    });
+// Mock logger (imported by route files)
+vi.mock('../../server/src/services/logger', () => ({
+  logInfo: vi.fn(),
+  logWarning: vi.fn(),
+  logError: vi.fn(),
+  logDebug: vi.fn(),
+}));
 
-    it('rejects non-integer occupancy', () => {
-      const { z } = require('zod');
-      const schema = z.object({
-        currentOccupancy: z.number().int().min(0).max(100000),
-      });
+// Import ACTUAL schemas from production route files
+import { updateOccupancySchema, navigationSchema } from '../../server/src/routes/zones';
+import { createAlertSchema } from '../../server/src/routes/alerts';
+import { chatSchema } from '../../server/src/routes/ai';
 
-      const result = schema.safeParse({ currentOccupancy: 3.5 });
-      expect(result.success).toBe(false);
-    });
-
-    it('accepts valid occupancy', () => {
-      const { z } = require('zod');
-      const schema = z.object({
-        currentOccupancy: z.number().int().min(0).max(100000),
-      });
-
-      const result = schema.safeParse({ currentOccupancy: 5000 });
-      expect(result.success).toBe(true);
-    });
-
-    it('rejects occupancy above maximum', () => {
-      const { z } = require('zod');
-      const schema = z.object({
-        currentOccupancy: z.number().int().min(0).max(100000),
-      });
-
-      const result = schema.safeParse({ currentOccupancy: 100001 });
-      expect(result.success).toBe(false);
-    });
+describe('Zone API — Occupancy Update Schema', () => {
+  it('rejects negative occupancy', () => {
+    const result = updateOccupancySchema.safeParse({ currentOccupancy: -1 });
+    expect(result.success).toBe(false);
   });
 
-  describe('Navigation validation', () => {
-    it('rejects empty zone IDs', () => {
-      const { z } = require('zod');
-      const schema = z.object({
-        startZoneId: z.string().min(1),
-        endZoneId: z.string().min(1),
-      });
+  it('rejects non-integer occupancy', () => {
+    const result = updateOccupancySchema.safeParse({ currentOccupancy: 3.5 });
+    expect(result.success).toBe(false);
+  });
 
-      expect(schema.safeParse({ startZoneId: '', endZoneId: 'b' }).success).toBe(false);
-      expect(schema.safeParse({ startZoneId: 'a', endZoneId: '' }).success).toBe(false);
-    });
+  it('accepts valid occupancy', () => {
+    const result = updateOccupancySchema.safeParse({ currentOccupancy: 5000 });
+    expect(result.success).toBe(true);
+  });
 
-    it('accepts valid zone IDs', () => {
-      const { z } = require('zod');
-      const schema = z.object({
-        startZoneId: z.string().min(1),
-        endZoneId: z.string().min(1),
-      });
+  it('rejects occupancy above maximum', () => {
+    const result = updateOccupancySchema.safeParse({ currentOccupancy: 100001 });
+    expect(result.success).toBe(false);
+  });
 
-      expect(schema.safeParse({ startZoneId: 'zone-north', endZoneId: 'zone-south' }).success).toBe(true);
-    });
+  it('accepts zero occupancy', () => {
+    const result = updateOccupancySchema.safeParse({ currentOccupancy: 0 });
+    expect(result.success).toBe(true);
+  });
+
+  it('accepts maximum occupancy', () => {
+    const result = updateOccupancySchema.safeParse({ currentOccupancy: 100000 });
+    expect(result.success).toBe(true);
   });
 });
 
-describe('Alert validation', () => {
-  it('rejects alert with short description', () => {
-    const { z } = require('zod');
-    const schema = z.object({
-      zoneId: z.string().min(1),
-      type: z.enum(['medical', 'security', 'maintenance', 'overcrowding']),
-      severity: z.enum(['low', 'medium', 'high', 'critical']),
-      description: z.string().min(5).max(500),
-    });
+describe('Zone API — Navigation Schema', () => {
+  it('rejects empty zone IDs', () => {
+    expect(navigationSchema.safeParse({ startZoneId: '', endZoneId: 'b' }).success).toBe(false);
+    expect(navigationSchema.safeParse({ startZoneId: 'a', endZoneId: '' }).success).toBe(false);
+  });
 
-    const result = schema.safeParse({
+  it('accepts valid zone IDs', () => {
+    expect(navigationSchema.safeParse({ startZoneId: 'zone-north', endZoneId: 'zone-south' }).success).toBe(true);
+  });
+
+  it('rejects missing fields', () => {
+    expect(navigationSchema.safeParse({ startZoneId: 'a' }).success).toBe(false);
+    expect(navigationSchema.safeParse({}).success).toBe(false);
+  });
+});
+
+describe('Alert API — Create Alert Schema', () => {
+  it('rejects alert with short description', () => {
+    const result = createAlertSchema.safeParse({
       zoneId: 'zone-1',
       type: 'medical',
       severity: 'high',
@@ -116,15 +109,7 @@ describe('Alert validation', () => {
   });
 
   it('rejects invalid alert type', () => {
-    const { z } = require('zod');
-    const schema = z.object({
-      zoneId: z.string().min(1),
-      type: z.enum(['medical', 'security', 'maintenance', 'overcrowding']),
-      severity: z.enum(['low', 'medium', 'high', 'critical']),
-      description: z.string().min(5).max(500),
-    });
-
-    const result = schema.safeParse({
+    const result = createAlertSchema.safeParse({
       zoneId: 'zone-1',
       type: 'fire',
       severity: 'high',
@@ -133,16 +118,18 @@ describe('Alert validation', () => {
     expect(result.success).toBe(false);
   });
 
-  it('accepts valid alert data', () => {
-    const { z } = require('zod');
-    const schema = z.object({
-      zoneId: z.string().min(1),
-      type: z.enum(['medical', 'security', 'maintenance', 'overcrowding']),
-      severity: z.enum(['low', 'medium', 'high', 'critical']),
-      description: z.string().min(5).max(500),
+  it('rejects invalid severity', () => {
+    const result = createAlertSchema.safeParse({
+      zoneId: 'zone-1',
+      type: 'medical',
+      severity: 'extreme',
+      description: 'Medical emergency at gate',
     });
+    expect(result.success).toBe(false);
+  });
 
-    const result = schema.safeParse({
+  it('accepts valid alert data', () => {
+    const result = createAlertSchema.safeParse({
       zoneId: 'zone-north-entry',
       type: 'security',
       severity: 'medium',
@@ -150,33 +137,62 @@ describe('Alert validation', () => {
     });
     expect(result.success).toBe(true);
   });
+
+  it('rejects missing zoneId', () => {
+    const result = createAlertSchema.safeParse({
+      type: 'medical',
+      severity: 'high',
+      description: 'Emergency at north gate',
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects description over 500 characters', () => {
+    const result = createAlertSchema.safeParse({
+      zoneId: 'zone-1',
+      type: 'security',
+      severity: 'low',
+      description: 'x'.repeat(501),
+    });
+    expect(result.success).toBe(false);
+  });
 });
 
-describe('AI chat validation', () => {
+describe('AI API — Chat Schema', () => {
   it('rejects empty messages', () => {
-    const { z } = require('zod');
-    const schema = z.object({
-      message: z.string().min(1).max(500),
-    });
-
-    expect(schema.safeParse({ message: '' }).success).toBe(false);
+    expect(chatSchema.safeParse({ message: '' }).success).toBe(false);
   });
 
   it('rejects messages over 500 characters', () => {
-    const { z } = require('zod');
-    const schema = z.object({
-      message: z.string().min(1).max(500),
-    });
-
-    expect(schema.safeParse({ message: 'a'.repeat(501) }).success).toBe(false);
+    expect(chatSchema.safeParse({ message: 'a'.repeat(501) }).success).toBe(false);
   });
 
   it('accepts valid messages', () => {
-    const { z } = require('zod');
-    const schema = z.object({
-      message: z.string().min(1).max(500),
-    });
+    expect(chatSchema.safeParse({ message: "Where's the shortest food queue?" }).success).toBe(true);
+  });
 
-    expect(schema.safeParse({ message: "Where's the shortest food queue?" }).success).toBe(true);
+  it('accepts messages with history', () => {
+    const result = chatSchema.safeParse({
+      message: 'Follow up question',
+      history: [
+        { role: 'user', content: 'Hello' },
+        { role: 'assistant', content: 'Hi there!' },
+      ],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects history with more than 10 items', () => {
+    const history = Array.from({ length: 11 }, (_, i) => ({
+      role: 'user',
+      content: `Message ${i}`,
+    }));
+    const result = chatSchema.safeParse({ message: 'test', history });
+    expect(result.success).toBe(false);
+  });
+
+  it('accepts messages without history (optional)', () => {
+    const result = chatSchema.safeParse({ message: 'test' });
+    expect(result.success).toBe(true);
   });
 });

@@ -62,7 +62,10 @@ export async function optionalAuth(
 
   if (authHeader?.startsWith('Bearer ')) {
     const idToken = authHeader.split('Bearer ')[1];
-    if (!idToken) return;
+    if (!idToken) {
+      next();
+      return;
+    }
     try {
       const decoded = await auth.verifyIdToken(idToken);
       req.auth = {

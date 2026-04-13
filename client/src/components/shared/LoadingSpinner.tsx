@@ -1,5 +1,3 @@
-
-
 interface LoadingSpinnerProps {
   /** Accessible label for screen readers */
   label?: string;

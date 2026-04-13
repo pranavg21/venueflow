@@ -1,4 +1,3 @@
-
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ZoneProvider } from './context/ZoneContext';
@@ -28,6 +27,9 @@ export default function App() {
       <AuthProvider>
         <ZoneProvider>
           <div className="app">
+            <a href="#main-content" className="skip-link">
+              Skip to main content
+            </a>
             <Header />
             <main className="app-main" id="main-content">
               <Routes>

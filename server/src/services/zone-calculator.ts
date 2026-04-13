@@ -17,6 +17,19 @@ const BASE_WAIT_MINUTES: Record<string, number> = {
 };
 
 /**
+ * Wait time grows exponentially (ratio^EXPONENT) to model the nonlinear
+ * relationship between crowd density and service time.
+ */
+const WAIT_TIME_EXPONENT = 1.5;
+
+/**
+ * Minimum edge weight in the navigation graph.
+ * Prevents zero-cost edges so even empty zones have routing cost,
+ * ensuring Dijkstra prefers shorter paths when congestion is equal.
+ */
+const DIJKSTRA_BASE_EDGE_WEIGHT = 0.1;
+
+/**
  * Derive zone status from occupancy ratio.
  * This is the single source of truth — all UI indicators derive from this.
  *
@@ -52,7 +65,7 @@ export function estimateWaitTime(
   if (capacity <= 0) return 0;
   const ratio = Math.max(0, Math.min(currentOccupancy / capacity, 1));
   const baseWait = BASE_WAIT_MINUTES[zoneType] ?? 5;
-  return Math.round(baseWait * Math.pow(ratio, 1.5));
+  return Math.round(baseWait * Math.pow(ratio, WAIT_TIME_EXPONENT));
 }
 
 /**
@@ -130,7 +143,7 @@ export function findLeastCongestedPath(
 
       // Edge weight = congestion ratio of the destination zone
       // Add a small base weight (0.1) so zero-congestion paths still have cost
-      const edgeWeight = 0.1 + congestionRatio(neighbor.currentOccupancy, neighbor.capacity);
+      const edgeWeight = DIJKSTRA_BASE_EDGE_WEIGHT + congestionRatio(neighbor.currentOccupancy, neighbor.capacity);
       const tentativeDist = currentDist + edgeWeight;
 
       if (tentativeDist < (distances.get(neighborId) ?? Infinity)) {

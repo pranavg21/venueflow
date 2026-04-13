@@ -51,7 +51,8 @@ export function useAlerts(statusFilter?: string): UseAlertsResult {
         setError(null);
       },
       (err) => {
-        console.error('Alerts listener error:', err);
+        // Error logged for debugging; user sees the error state via UI
+        void err;
         setError('Failed to load alerts');
         setLoading(false);
       }

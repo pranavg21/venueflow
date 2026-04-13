@@ -121,6 +121,26 @@ body {
   border-width: 0;
 }
 
+/* Skip-to-content link (WCAG 2.4.1) — visible only on focus */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: var(--space-md);
+  z-index: 200;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-accent);
+  color: white;
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  text-decoration: none;
+  transition: top var(--transition-fast);
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
 /* Focus-visible for keyboard nav */
 :focus-visible {
   outline: 2px solid var(--color-accent);

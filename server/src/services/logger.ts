@@ -12,9 +12,7 @@ import { Logging } from '@google-cloud/logging';
 
 const isProduction = process.env.NODE_ENV === 'production';
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-type LogPayload = Record<string, any>;
-/* eslint-enable @typescript-eslint/no-explicit-any */
+type LogPayload = Record<string, unknown>;
 
 let cloudLog: ReturnType<Logging['log']> | null = null;
 

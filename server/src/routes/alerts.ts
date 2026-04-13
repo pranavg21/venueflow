@@ -9,8 +9,7 @@ import type { Zone, Alert } from '../types';
 
 const router = Router();
 
-/** Zod schema for creating an alert */
-const createAlertSchema = z.object({
+export const createAlertSchema = z.object({
   zoneId: z.string().min(1, 'Zone ID is required'),
   type: z.enum(['medical', 'security', 'maintenance', 'overcrowding']),
   severity: z.enum(['low', 'medium', 'high', 'critical']),

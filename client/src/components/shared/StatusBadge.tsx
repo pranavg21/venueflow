@@ -1,4 +1,3 @@
-
 import type { ZoneStatus } from '../../types';
 import { STATUS_CLASSES, STATUS_LABELS, STATUS_ICONS } from '../../utils/status';
 

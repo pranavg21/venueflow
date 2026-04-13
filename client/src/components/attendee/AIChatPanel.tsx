@@ -32,15 +32,19 @@ export default function AIChatPanel() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    const trimmed = input.trim();
-    if (!trimmed || isLoading) return;
+  /**
+   * Core message sender — shared by form submission and quick question buttons.
+   * Appends the user message, sends to AI with conversation history, and
+   * appends the AI response. Deduplicates the logic that was previously
+   * copy-pasted between handleSubmit and handleQuickQuestion.
+   */
+  const sendMessage = async (text: string) => {
+    if (!text || isLoading) return;
 
     const userMessage: ChatMessage = {
       id: `user-${Date.now()}`,
       role: 'user',
-      content: trimmed,
+      content: text,
       timestamp: Date.now(),
     };
 
@@ -50,79 +54,38 @@ export default function AIChatPanel() {
     setIsLoading(true);
 
     try {
-      // Build conversation history from last 6 messages (excluding welcome)
       const history = updatedMessages
         .filter(m => m.id !== 'welcome')
         .slice(-6)
         .map(m => ({ role: m.role, content: m.content }));
 
-      const response = await sendAIChat(trimmed, history);
-      const aiMessage: ChatMessage = {
+      const response = await sendAIChat(text, history);
+      setMessages(prev => [...prev, {
         id: `ai-${Date.now()}`,
         role: 'assistant',
         content: response.reply,
         timestamp: Date.now(),
-      };
-      setMessages(prev => [...prev, aiMessage]);
+      }]);
     } catch {
-      const errorMessage: ChatMessage = {
+      setMessages(prev => [...prev, {
         id: `error-${Date.now()}`,
         role: 'assistant',
         content: "I'm having trouble connecting right now. Please try again in a moment.",
         timestamp: Date.now(),
-      };
-      setMessages(prev => [...prev, errorMessage]);
+      }]);
     } finally {
       setIsLoading(false);
       inputRef.current?.focus();
     }
   };
 
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    await sendMessage(input.trim());
+  };
+
   const handleQuickQuestion = (q: string) => {
-    setInput(q);
-    
-    
-    // We must manually pass 'q' inside because state updates are async
-    const trimmed = q.trim();
-    if (!trimmed || isLoading) return;
-
-    const userMessage: ChatMessage = {
-      id: `user-${Date.now()}`,
-      role: 'user',
-      content: trimmed,
-      timestamp: Date.now(),
-    };
-
-    const updatedMessages = [...messages, userMessage];
-    setMessages(updatedMessages);
-    setInput('');
-    setIsLoading(true);
-
-    const history = updatedMessages
-      .filter(m => m.id !== 'welcome')
-      .slice(-6)
-      .map(m => ({ role: m.role, content: m.content }));
-
-    sendAIChat(trimmed, history)
-      .then(response => {
-        setMessages(prev => [...prev, {
-          id: `ai-${Date.now()}`,
-          role: 'assistant',
-          content: response.reply,
-          timestamp: Date.now(),
-        }]);
-      })
-      .catch(() => {
-        setMessages(prev => [...prev, {
-          id: `error-${Date.now()}`,
-          role: 'assistant',
-          content: "I'm having trouble connecting right now. Please try again in a moment.",
-          timestamp: Date.now(),
-        }]);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
+    void sendMessage(q);
   };
 
   const quickQuestions = [

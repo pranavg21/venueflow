@@ -28,7 +28,7 @@ export function ZoneProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (useMockMode) {
-      console.warn('VenueFlow: Running in MOCK MODE (no Firebase API keys found).');
+      // No Firebase API keys found — running with mock data for demonstration
       let currentZones = [...MOCK_INITIAL_ZONES];
       setZones(currentZones);
       setLoading(false);
@@ -75,7 +75,8 @@ export function ZoneProvider({ children }: { children: React.ReactNode }) {
         setError(null);
       },
       (err) => {
-        console.error('Zone listener error:', err);
+        // Error surfaced in UI via the error state
+        void err;
         setError('Failed to connect to live data. Retrying...');
         setLoading(false);
       }

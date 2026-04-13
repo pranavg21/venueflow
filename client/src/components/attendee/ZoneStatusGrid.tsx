@@ -1,4 +1,3 @@
-
 import { useZones } from '../../context/ZoneContext';
 import ZoneStatusCard from './ZoneStatusCard';
 

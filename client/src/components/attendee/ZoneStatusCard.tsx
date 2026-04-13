@@ -1,4 +1,3 @@
-
 import type { Zone } from '../../types';
 import StatusBadge from '../shared/StatusBadge';
 import { ZONE_TYPE_ICONS, ZONE_TYPE_LABELS, getOccupancyPercent } from '../../utils/status';

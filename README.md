@@ -51,14 +51,16 @@ To build this prototype within the hackathon time constraints, several assumptio
 
 ## Testing
 - **Framework:** Vitest  
-- **Test Files:** `tests/server/zone-calculator.test.ts` (20 tests), `tests/server/api-validation.test.ts` (12 tests)  
-- **Coverage:** Core business logic (status derivation, wait time algorithms, Dijkstra pathfinding, Zod schema validation)  
-- **Run:** `npm test` from root or `npx vitest run`
+- **Server Tests:** `tests/server/zone-calculator.test.ts` (20 tests), `tests/server/api-validation.test.ts` (21 tests), `tests/server/logger.test.ts` (7 tests)  
+- **Client Tests:** `src/__tests__/utils/status.test.ts` (15 tests), `src/__tests__/utils/formatters.test.ts` (11 tests), `src/__tests__/components/StatusBadge.test.tsx` (10 tests), `src/__tests__/components/LoadingSpinner.test.tsx` (8 tests), `src/__tests__/components/ErrorBoundary.test.tsx` (7 tests)  
+- **Total:** 99 tests across 8 test files (server: 48, client: 51)  
+- **Coverage:** Core business logic, utility functions, component rendering, accessibility attributes, Zod schema validation  
+- **Run:** `npm test` (server) or `cd client && npm test` (client)
 
 ## Evaluation Focus Areas Addressed
-- **Code Quality:** Clean monorepo with strict TypeScript (zero `any` types), modularized components, structured logging, comprehensive JSDoc documentation, and no debug statements.
+- **Code Quality:** Clean monorepo with strict TypeScript (zero `any` types, zero lint suppressions), modularized components, structured logging, comprehensive JSDoc documentation, DRY principle enforcement, and named constants for all algorithmic parameters.
 - **Security:** Firebase Auth with custom claims, 3-tier rate limiting, Helmet security headers, Zod input validation, CORS allowlist, and error sanitization in production.
 - **Efficiency:** Zero-polling WebSocket architecture, `useMemo` context optimization, O(1) zone lookups, server-side pathfinding, code splitting, and PWA caching.
-- **Testing:** 32 passing unit tests covering zone status derivation, wait time algorithms, Dijkstra pathfinding, and API validation schemas.
+- **Testing:** 99 passing unit tests across server and client, covering zone status derivation, wait time algorithms, Dijkstra pathfinding, API validation schemas, utility functions, component rendering, and accessibility attributes.
 - **Accessibility:** 60+ ARIA attributes, `aria-live` regions, full WCAG tab patterns, semantic HTML, keyboard navigation, and `prefers-reduced-motion` support.
 - **Google Services:** 6 deeply integrated services — Firebase Auth, Firebase RTDB, Google Maps JS API, Vertex AI (Gemini 2.5 Flash), Google Cloud Logging, and Google Cloud Run.
