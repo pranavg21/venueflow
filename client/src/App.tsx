@@ -59,7 +59,7 @@ export default function App() {
                 <div className="footer-links">
                   <a href="https://console.cloud.google.com/" target="_blank" rel="noreferrer" className="footer-link">Google Cloud</a>
                   <a href="https://firebase.google.com" target="_blank" rel="noreferrer" className="footer-link">Firebase</a>
-                  <a href="https://github.com/21pra/venueflow" target="_blank" rel="noreferrer" className="footer-link">GitHub</a>
+                  <a href="https://github.com/pranavg21/venueflow" target="_blank" rel="noreferrer" className="footer-link">GitHub</a>
                 </div>
               </div>
               <div className="footer-bottom">

@@ -88,7 +88,7 @@ function attemptLoad(attempt: number): Promise<typeof google.maps> {
           const msg = 'Google Maps script loaded but API failed to initialize. Check API key restrictions in Google Cloud Console.';
           mapsLoadError = msg;
           if (attempt < MAX_RETRIES - 1) {
-            console.warn(`Maps load attempt ${attempt + 1} failed, retrying in ${RETRY_DELAY_MS}ms...`);
+            // Retry silently — error already tracked in mapsLoadError
             loadPromise = null; // Reset so retry creates a new promise
             setTimeout(() => {
               attemptLoad(attempt + 1).then(resolve).catch(reject);
@@ -106,7 +106,7 @@ function attemptLoad(attempt: number): Promise<typeof google.maps> {
       const msg = 'Failed to load Google Maps script — check network connection or API key';
       mapsLoadError = msg;
       if (attempt < MAX_RETRIES - 1) {
-        console.warn(`Maps script load failed (attempt ${attempt + 1}), retrying...`);
+        // Retry silently — error already tracked in mapsLoadError
         loadPromise = null;
         setTimeout(() => {
           attemptLoad(attempt + 1).then(resolve).catch(reject);

@@ -16,7 +16,6 @@ export const createAlertSchema = z.object({
   description: z.string().min(5, 'Description must be at least 5 characters').max(500),
 });
 
-
 /**
  * GET /api/alerts
  * Staff-only — returns all alerts, optionally filtered by status.
